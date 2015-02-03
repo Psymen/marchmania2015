@@ -71,4 +71,7 @@ if __name__ == '__main__':
     feature_data['wins_tourney'] = tWins
     feature_data['losses_tourney'] = tLoss
 
+    # Add derived features
+    feature_data['win_perc_season'] = feature_data['wins_season']/(feature_data['losses_season'] + feature_data['wins_season'])
+    feature_data['win_perc_tourney'] = feature_data['wins_tourney']/(feature_data['losses_tourney'] + feature_data['wins_tourney'])
     print feature_data
