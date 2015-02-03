@@ -5,5 +5,3 @@
 # Ignore Python compiled files
 *.pyc
 
-# Ignore data files
-data/
