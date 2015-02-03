@@ -6,8 +6,8 @@ from os.path import exists, basename, splitext
 from glob import glob
 
 # Import common modules
-from pandas import read_csv
-from numpy import sum
+from pandas import read_csv, DataFrame
+from numpy import sum, zeros
 
 class DataLoader(object):
     
@@ -41,14 +41,34 @@ class DataLoader(object):
 
 # Main script
 if __name__ == '__main__':
-    
+
     # Load Raw Data
     raw_data = DataLoader('~/Workspace/Kaggle/marchmania2015/data')
     
+    # Process Data Features
+    wins = zeros(len(raw_data.teams))
+    loss = zeros(len(raw_data.teams))
+    tWins = zeros(len(raw_data.teams))
+    tLoss = zeros(len(raw_data.teams))
+    ids = []
+    names = []
     for i in range(len(raw_data.teams)):
-        _id = raw_data.teams['team_id'][i]
-        name = raw_data.teams['team_name'][i]
-        wins = sum(raw_data.regular_season_compact_results['wteam'] == _id)
-        losses = sum(raw_data.regular_season_compact_results['lteam'] == _id)
-        print name + ': ' + str(wins) + '/' + str(losses)
+        ids.append(raw_data.teams['team_id'][i])
+        names.append(raw_data.teams['team_name'][i])
+        
+        # Regular Season basics
+        wins[i] = sum(raw_data.regular_season_compact_results['wteam'] == ids[i])
+        loss[i] = sum(raw_data.regular_season_compact_results['lteam'] == ids[i])
 
+        # Tourney basics
+        tWins[i] = sum(raw_data.tourney_compact_results['wteam'] == ids[i])
+        tLoss[i] = sum(raw_data.tourney_compact_results['lteam'] == ids[i])
+
+    # Create Features DataFrame
+    feature_data = DataFrame(names, index=ids, columns=['name'])
+    feature_data['wins_season'] = wins
+    feature_data['losses_season'] = loss
+    feature_data['wins_tourney'] = tWins
+    feature_data['losses_tourney'] = tLoss
+
+    print feature_data
