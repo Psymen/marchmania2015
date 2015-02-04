@@ -7,7 +7,7 @@ from glob import glob
 
 # Import common modules
 from pandas import read_csv, DataFrame
-from numpy import sum, zeros
+from numpy import sum, zeros, nan
 
 class DataLoader(object):
     
@@ -39,7 +39,7 @@ class DataLoader(object):
             name = splitext(temp)[0]
             self.__dict__[name] = read_csv(fName)
 
-# Main script
+# Main scriptgit
 if __name__ == '__main__':
 
     # Load Raw Data
@@ -69,9 +69,34 @@ if __name__ == '__main__':
     feature_data['wins_season'] = wins
     feature_data['losses_season'] = loss
     feature_data['wins_tourney'] = tWins
-    feature_data['losses_tourney'] = tLoss
 
     # Add derived features
-    feature_data['win_perc_season'] = feature_data['wins_season']/(feature_data['losses_season'] + feature_data['wins_season'])
-    feature_data['win_perc_tourney'] = feature_data['wins_tourney']/(feature_data['losses_tourney'] + feature_data['wins_tourney'])
-    print feature_data
+    feature_data['percent_season'] = feature_data['wins_season']/(feature_data['losses_season'] + feature_data['wins_season'])
+
+    # Get data by individual year
+    years = raw_data.seasons['season']
+    for year in years:
+        
+        cYear = raw_data.regular_season_compact_results['season'] == year
+        
+        feature_data['wins_s_' + str(year)] = nan
+        feature_data['losses_s_' + str(year)] = nan
+        feature_data['percent_s_' + str(year)] = nan
+        
+        wins = zeros(len(feature_data.index.values))
+        losses = zeros(len(feature_data.index.values))
+        for i in range(len(feature_data.index.values)):
+        
+            _id = feature_data.index.values[i]
+             
+            c1 = raw_data.regular_season_compact_results['wteam'][cYear] == _id
+            c2 = raw_data.regular_season_compact_results['lteam'][cYear] == _id
+            wins[i] = sum(c1)
+            losses[i] = sum(c2)
+            
+        feature_data['wins_s_' + str(year)] = wins
+        feature_data['losses_s_' + str(year)] = losses
+        feature_data['win_perc_s_' + str(year)] = wins/(wins+losses)
+
+    feature_data.to_csv('features.csv')
+    
